@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puter Hosting App</title>
+    <script src="https://js.puter.com/v2/"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+
+    <div class="bg-white p-6 rounded-lg shadow-md text-center w-full max-w-2xl">
+        <h1 class="text-2xl font-bold text-gray-800">🚀 Puter Hosting Dashboard</h1>
+
+        <!-- Authentication Section -->
+        <button id="sign-in" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition">
+            Sign in with Puter
+        </button>
+
+        <button id="sign-out" class="mt-4 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition hidden">
+            Sign Out
+        </button>
+
+        <!-- Hosting Dashboard (Hidden Initially) -->
+        <div id="dashboard" class="hidden">
+            <p class="text-lg text-gray-700 mt-4">Welcome! Upload your HTML file to host a site:</p>
+
+            <!-- Upload Section -->
+            <div class="mt-4">
+                <input id="fileUpload" type="file" class="w-full p-2 border rounded-md bg-gray-50">
+                <input id="subdomain" type="text" placeholder="Enter custom subdomain" class="w-full mt-2 px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-400">
+                <button onclick="deployApp()" class="w-full mt-3 bg-green-500 text-white py-2 rounded-md hover:bg-green-600 transition">
+                    🚀 Deploy App
+                </button>
+            </div>
+
+            <!-- Hosted Apps -->
+            <h2 class="text-lg font-bold text-gray-700 mt-6">Your Hosted Apps</h2>
+            <ul id="hosted-apps" class="mt-3 space-y-2"></ul>
+
+            <!-- Logs and Errors -->
+            <div id="logPanel" class="mt-4 p-3 bg-gray-200 rounded-md text-sm text-gray-700 max-h-[300px] overflow-y-auto">
+                <h2 class="font-bold">📜 Logs & Errors</h2>
+                <div id="logs"></div>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <p id="error-message" class="text-red-500 mt-4 hidden"></p>
+    </div>
+
+    <script>
+        async function checkAuth() {
+            try {
+                const user = await puter.auth.getUser();
+                if (user) {
+                    document.getElementById('sign-in').classList.add('hidden');
+                    document.getElementById('sign-out').classList.remove('hidden');
+                    document.getElementById('dashboard').classList.remove('hidden');
+                    log("✅ User authenticated.");
+                    await fetchHostedApps();
+                }
+            } catch (error) {
+                log("❌ Authentication error: " + error.message);
+                document.getElementById('error-message').textContent = "❌ Authentication failed.";
+                document.getElementById('error-message').classList.remove('hidden');
+            }
+        }
+
+        async function deployApp() {
+            let file = document.getElementById("fileUpload").files[0];
+            let subdomain = document.getElementById("subdomain").value.trim();
+
+            if (!file || !subdomain) {
+                log("⚠️ Please upload a file and enter a subdomain.");
+                return;
+            }
+
+            try {
+                log("📂 Creating directory...");
+                await puter.fs.mkdir(subdomain);
+
+                log("📄 Reading file...");
+                let fileText = await file.text();
+
+                log("💾 Writing file...");
+                await puter.fs.write(`${subdomain}/index.html`, fileText);
+
+                log("🚀 Hosting site...");
+                const site = await puter.hosting.create(subdomain, subdomain);
+                
+                log(`✅ Hosted successfully: <a href="https://${site.subdomain}.puter.site" target="_blank">${site.subdomain}.puter.site</a>`);
+                await fetchHostedApps();
+            } catch (error) {
+                log("❌ Hosting error: " + error.message);
+            }
+        }
+
+        async function fetchHostedApps() {
+            try {
+                log("🔍 Fetching hosted sites...");
+                const sites = await puter.hosting.list();
+                let listHtml = sites.length === 0 
+                    ? "<li class='text-gray-500'>No hosted apps found.</li>" 
+                    : sites.map(site =>
+                        `<li class="bg-green-100 p-2 rounded-md flex justify-between">
+                            <a href="https://${site.subdomain}.puter.site" target="_blank" class="text-blue-500">${site.subdomain}.puter.site</a>
+                            <button onclick="copyLink('${site.subdomain}')" class="bg-blue-400 text-white px-3 py-1 rounded hover:bg-blue-500 transition">📋 Copy</button>
+                        </li>`
+                    ).join('');
+                document.getElementById('hosted-apps').innerHTML = listHtml;
+                log("✅ Hosted sites updated.");
+            } catch (error) {
+                log("❌ Failed to fetch hosted apps: " + error.message);
+            }
+        }
+
+        function copyLink(subdomain) {
+            const link = `https://${subdomain}.puter.site`;
+            navigator.clipboard.writeText(link);
+            alert("📋 Link copied: " + link);
+        }
+
+        function log(message) {
+            document.getElementById('logs').innerHTML += `<p>${message}</p>`;
+        }
+
+        document.getElementById('sign-in').addEventListener('click', async () => {
+            try {
+                await puter.auth.signIn();
+                location.reload();
+            } catch (error) {
+                alert("❌ Sign-in failed: " + error.message);
+            }
+        });
+
+        document.getElementById('sign-out').addEventListener('click', async () => {
+            await puter.auth.signOut();
+            location.reload();
+        });
+
+        checkAuth();
+    </script>
+
+</body>
+</html>

@@ -1,147 +1,522 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Puter Hosting App</title>
-    <script src="https://js.puter.com/v2/"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Puter Hosting App - Enhanced</title>
+  
+  <!-- Puter SDK -->
+  <script src="https://js.puter.com/v2/"></script>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            glass: 'rgba(255, 255, 255, 0.2)',
+            'glass-border': 'rgba(255, 255, 255, 0.18)',
+          },
+          backdropBlur: {
+            glass: '8px',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+     .scrollbar-thin::-webkit-scrollbar {
+      width: 4px; /* Thin scrollbar width */
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 2px;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      /* Use any darker image you like; below is an example. */
+      background-image: url('https://images.unsplash.com/photo-1610878180933-fbcc146412c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Main glass container */
+    .glass {
+      background: rgba(0, 0, 0, 0.6); /* Darker glass for easier reading */
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+      color: #eee; /* Lighter text for better contrast */
+    }
+
+    /* Card sections inside glass container */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+      color: #eee;
+    }
+    .glass-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px 0 rgba(0, 0, 0, 0.5);
+    }
+
+    /* Inputs with glass effect */
+    .glass-input {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #eee;
+    }
+
+    /* Buttons with glass effect */
+    .glass-button {
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+      color: #eee;
+    }
+    .glass-button:hover {
+      background: rgba(255, 255, 255, 0.35);
+      transform: translateY(-2px);
+    }
+
+    /* Headings in light-blue */
+    h1, h2, h3, h4, h5, h6 {
+      color: #66ccff;
+    }
+
+    /* Pulse animation for sign-in button */
+    .animated-pulse {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    /* Log entries fade in */
+    .log-entry {
+      animation: fadeIn 0.5s;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Loading spinner */
+    .loading {
+      animation: rotate 1s linear infinite;
+      border-top-color: transparent;
+    }
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 
-<body class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-
-    <div class="bg-white p-6 rounded-lg shadow-md text-center w-full max-w-2xl">
-        <h1 class="text-2xl font-bold text-gray-800">🚀 Puter Hosting Dashboard</h1>
-
-        <!-- Authentication Section -->
-        <button id="sign-in" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition">
-            Sign in with Puter
-        </button>
-
-        <button id="sign-out" class="mt-4 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition hidden">
-            Sign Out
-        </button>
-
-        <!-- Hosting Dashboard (Hidden Initially) -->
-        <div id="dashboard" class="hidden">
-            <p class="text-lg text-gray-700 mt-4">Welcome! Upload your HTML file to host a site:</p>
-
-            <!-- Upload Section -->
-            <div class="mt-4">
-                <input id="fileUpload" type="file" class="w-full p-2 border rounded-md bg-gray-50">
-                <input id="subdomain" type="text" placeholder="Enter custom subdomain" class="w-full mt-2 px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-400">
-                <button onclick="deployApp()" class="w-full mt-3 bg-green-500 text-white py-2 rounded-md hover:bg-green-600 transition">
-                    🚀 Deploy App
-                </button>
-            </div>
-
-            <!-- Hosted Apps -->
-            <h2 class="text-lg font-bold text-gray-700 mt-6">Your Hosted Apps</h2>
-            <ul id="hosted-apps" class="mt-3 space-y-2"></ul>
-
-            <!-- Logs and Errors -->
-            <div id="logPanel" class="mt-4 p-3 bg-gray-200 rounded-md text-sm text-gray-700 max-h-[300px] overflow-y-auto">
-                <h2 class="font-bold">📜 Logs & Errors</h2>
-                <div id="logs" class="text-left w-full"></div>
-            </div>
+<body class="flex flex-col items-center justify-center min-h-screen p-4 overflow-x-hidden">
+  <div class="glass rounded-xl p-8 w-full max-w-3xl">
+    
+    <!-- Header -->
+    <div class="flex items-center justify-center mb-6">
+      <div class="relative">
+        <h1 class="text-3xl font-bold text-center">Puter Hosting Dashboard</h1>
+        <div class="absolute -top-4 -right-4 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center animate-bounce transition-all duration-1000">
+          <span class="text-white text-xl">🚀</span>
         </div>
-
-        <!-- Error Message -->
-        <p id="error-message" class="text-red-500 mt-4 hidden"></p>
+      </div>
     </div>
 
-    <script>
-        async function checkAuth() {
-            try {
-                const user = await puter.auth.getUser();
-                if (user) {
-                    document.getElementById('sign-in').classList.add('hidden');
-                    document.getElementById('sign-out').classList.remove('hidden');
-                    document.getElementById('dashboard').classList.remove('hidden');
-                    log("✅ User authenticated.");
-                    await fetchHostedApps();
-                }
-            } catch (error) {
-                log("❌ Authentication error: " + error.message);
-                document.getElementById('error-message').textContent = "❌ Authentication failed.";
-                document.getElementById('error-message').classList.remove('hidden');
-            }
+    <!-- Authentication Section -->
+    <div id="auth-section" class="flex flex-col items-center">
+      <button
+        id="sign-in"
+        class="glass-button flex items-center space-x-2 py-3 px-6 rounded-lg font-medium animated-pulse mb-2"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+             xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 
+                3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+        </svg>
+        <span>Sign in with Puter</span>
+      </button>
+
+      <button
+        id="sign-out"
+        class="glass-button hidden py-3 px-6 rounded-lg font-medium hover:bg-red-500 transition-all duration-300"
+      >
+        <span>Sign Out</span>
+      </button>
+    </div>
+
+    <!-- Dashboard (Hidden Initially) -->
+    <div id="dashboard" class="hidden mt-6 transition-all duration-500">
+      <p class="text-lg mb-4 font-light">
+        Welcome to your hosting dashboard!
+      </p>
+
+      <!-- Upload Section -->
+      <div class="glass-card p-6 rounded-xl mb-6 transition-all duration-300">
+        <h2 class="text-xl font-semibold mb-4 flex items-center">
+          <span class="mr-2">📤</span> Upload Your Site
+        </h2>
+        
+        <div class="space-y-4">
+          <!-- File Upload -->
+          <div class="relative">
+            <label for="fileUpload" class="block text-sm mb-2">HTML File</label>
+            <div class="glass-input p-3 rounded-lg cursor-pointer hover:bg-opacity-40 transition-all">
+              <input id="fileUpload" accept=".html" type="file" class="opacity-0 absolute inset-0 w-full cursor-pointer" />
+              <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                     xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 
+                        6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                </svg>
+                <span id="file-name">Choose HTML file</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Subdomain Input -->
+          <div>
+            <label for="subdomain" class="block text-sm mb-2">Subdomain</label>
+            <input
+              id="subdomain"
+              type="text"
+              placeholder="Enter custom subdomain"
+              class="glass-input w-full p-3 rounded-lg placeholder-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"
+            />
+          </div>
+          
+          <!-- Deploy Button -->
+          <button
+            id="deploy-btn"
+            onclick="deployApp()"
+            class="glass-button w-full py-3 rounded-lg font-medium hover:bg-green-500 transition-all duration-300 flex items-center justify-center"
+          >
+            <span id="deploy-icon" class="mr-2">🚀</span>
+            <span id="deploy-text">Deploy App</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Hosted Apps -->
+      <div class="glass-card p-6 rounded-xl mb-6 transition-all duration-300">
+        <h2 class="text-xl font-semibold mb-4 flex items-center">
+          <span class="mr-2">🌐</span> Your Hosted Apps
+        </h2>
+        
+        <div id="hosted-apps-container" class="relative min-h-[100px] overflow-auto">
+          <div id="loading-apps" class="absolute inset-0 flex items-center justify-center">
+            <div class="loading w-8 h-8 border-4 border-blue-500 rounded-full"></div>
+          </div>
+          <ul id="hosted-apps" class="space-y-3"></ul>
+        </div>
+      </div>
+
+      <!-- Logs & Errors -->
+      <div class="glass-card p-6 rounded-xl transition-all duration-300">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-semibold flex items-center">
+            <span class="mr-2">📜</span> Logs & Errors
+          </h2>
+          <button
+            id="clear-logs"
+            class="glass-button py-2 px-4 rounded-md hover:bg-red-500 text-sm"
+          >
+            Clear Logs
+          </button>
+        </div>
+        
+        <div id="logPanel" class="glass-input p-4 rounded-lg max-h-[300px] overflow-y-auto">
+          <div id="logs" class="text-sm"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2"></div>
+  </div>
+
+  <script>
+    /***************************************
+     *           LOGS HISTORY             *
+     ***************************************/
+    let logsArray = [];
+
+    // Load logs from localStorage
+    function loadLogsFromStorage() {
+      const stored = localStorage.getItem('logsHistory');
+      if (stored) {
+        logsArray = JSON.parse(stored);
+      }
+    }
+
+    // Save logs to localStorage
+    function saveLogsToStorage() {
+      localStorage.setItem('logsHistory', JSON.stringify(logsArray));
+    }
+
+    // Append a log entry to UI and to logs array
+    function log(message) {
+      logsArray.push(message);
+      saveLogsToStorage();
+
+      const logEntry = document.createElement('div');
+      logEntry.className = 'log-entry mb-2';
+      logEntry.innerHTML = message;
+      document.getElementById('logs').appendChild(logEntry);
+      document.getElementById('logPanel').scrollTop = document.getElementById('logPanel').scrollHeight;
+    }
+
+    // Reload logs into the UI from logsArray
+    function loadLogsToUI() {
+      const logsContainer = document.getElementById('logs');
+      logsContainer.innerHTML = '';
+      logsArray.forEach(msg => {
+        const logEntry = document.createElement('div');
+        logEntry.className = 'log-entry mb-2';
+        logEntry.innerHTML = msg;
+        logsContainer.appendChild(logEntry);
+      });
+      document.getElementById('logPanel').scrollTop = document.getElementById('logPanel').scrollHeight;
+    }
+
+    // Clear logs
+    document.getElementById('clear-logs').addEventListener('click', () => {
+      logsArray = [];
+      saveLogsToStorage();
+      loadLogsToUI();
+      showToast('Logs cleared!', 'info');
+    });
+
+    /***************************************
+     *       TOAST NOTIFICATIONS          *
+     ***************************************/
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      const bgColor = type === 'success' ? 'bg-green-500' :
+                      type === 'error'   ? 'bg-red-500' :
+                      type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500';
+
+      toast.className = `${bgColor} bg-opacity-80 text-white px-4 py-2 rounded-lg shadow-lg flex items-center max-w-xs mb-2 transition-opacity`;
+      const icon = type === 'success' ? '✅' :
+                   type === 'error'   ? '❌' :
+                   type === 'warning' ? '⚠️' : 'ℹ️';
+
+      toast.innerHTML = `<span class="mr-2">${icon}</span><span>${message}</span>`;
+      document.getElementById('toast-container').appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        toast.style.transition = 'opacity 0.5s, transform 0.5s';
+        setTimeout(() => toast.remove(), 500);
+      }, 3000);
+    }
+
+    /***************************************
+     *           AUTH CHECK               *
+     ***************************************/
+    async function checkAuth() {
+      try {
+        const user = await puter.auth.getUser();
+        if (user) {
+          // Logged in
+          document.getElementById('sign-in').classList.add('hidden');
+          document.getElementById('sign-out').classList.remove('hidden');
+          document.getElementById('dashboard').classList.remove('hidden');
+          
+          log(`<span style="color: #0f0;">✅ Welcome, ${user.username || 'User'}!</span>`);
+          showToast(`Welcome back, ${user.username || 'User'}!`, 'success');
+          await fetchHostedApps();
+        } else {
+          // Not logged in
+          document.getElementById('sign-in').classList.remove('hidden');
+          document.getElementById('sign-out').classList.add('hidden');
+          document.getElementById('dashboard').classList.add('hidden');
         }
+      } catch (error) {
+        log(`<span style="color: #f00;">❌ Authentication error: ${error.message}</span>`);
+        showToast('Authentication failed', 'error');
+      }
+    }
 
-        async function deployApp() {
-            let file = document.getElementById("fileUpload").files[0];
-            let subdomain = document.getElementById("subdomain").value.trim();
+    /***************************************
+     *         DEPLOY FUNCTION            *
+     ***************************************/
+    async function deployApp() {
+      const file = document.getElementById("fileUpload").files[0];
+      const subdomain = document.getElementById("subdomain").value.trim();
 
-            if (!file || !subdomain) {
-                log("⚠️ Please upload a file and enter a subdomain.");
-                return;
-            }
+      if (!file || !subdomain) {
+        log(`<span style="color: #ff0;">⚠️ Please upload a file and enter a subdomain.</span>`);
+        showToast('Please upload a file and enter a subdomain', 'warning');
+        return;
+      }
 
-            try {
-                log("📂 Creating directory...");
-                await puter.fs.mkdir(subdomain);
+      // Start loading animation
+      const deployBtn = document.getElementById('deploy-btn');
+      const deployIcon = document.getElementById('deploy-icon');
+      const deployText = document.getElementById('deploy-text');
+      deployBtn.disabled = true;
+      deployIcon.innerHTML = '<div class="loading w-5 h-5 border-2 border-white rounded-full"></div>';
+      deployText.textContent = 'Deploying...';
 
-                log("📄 Reading file...");
-                let fileText = await file.text();
+      try {
+        log(`<span style="color: #0ff;">📂 Creating directory...</span>`);
+        await puter.fs.mkdir(subdomain);
 
-                log("💾 Writing file...");
-                await puter.fs.write(`${subdomain}/index.html`, fileText);
+        log(`<span style="color: #0ff;">📄 Reading file...</span>`);
+        const fileText = await file.text();
 
-                log("🚀 Hosting site...");
-                const site = await puter.hosting.create(subdomain, subdomain);
-                
-                log(`✅ Hosted successfully: <a href="https://${site.subdomain}.puter.site" target="_blank">${site.subdomain}.puter.site</a>`);
-                await fetchHostedApps();
-            } catch (error) {
-                log("❌ Hosting error: " + error.message);
-            }
-        }
+        log(`<span style="color: #0ff;">💾 Writing file...</span>`);
+        await puter.fs.write(`${subdomain}/index.html`, fileText);
 
-        async function fetchHostedApps() {
-            try {
-                log("🔍 Fetching hosted sites...");
-                const sites = await puter.hosting.list();
-                let listHtml = sites.length === 0 
-                    ? "<li class='text-gray-500'>No hosted apps found.</li>" 
-                    : sites.map(site =>
-                        `<li class="bg-green-100 p-2 rounded-md flex justify-between">
-                            <a href="https://${site.subdomain}.puter.site" target="_blank" class="text-blue-500">${site.subdomain}.puter.site</a>
-                            <button onclick="copyLink('${site.subdomain}')" class="bg-blue-400 text-white px-3 py-1 rounded hover:bg-blue-500 transition">📋 Copy</button>
-                        </li>`
-                    ).join('');
-                document.getElementById('hosted-apps').innerHTML = listHtml;
-                log("✅ Hosted sites updated.");
-            } catch (error) {
-                log("❌ Failed to fetch hosted apps: " + error.message);
-            }
-        }
+        log(`<span style="color: #0ff;">🚀 Hosting site...</span>`);
+        const site = await puter.hosting.create(subdomain, subdomain);
 
-        function copyLink(subdomain) {
-            const link = `https://${subdomain}.puter.site`;
-            navigator.clipboard.writeText(link);
-            alert("📋 Link copied: " + link);
-        }
+        log(`
+          <span style="color: #0f0;">
+            ✅ Hosted successfully: 
+            <a href="https://${site.subdomain}.puter.site" target="_blank" style="color:#66ccff;text-decoration:underline;">
+              ${site.subdomain}.puter.site
+            </a>
+          </span>
+        `);
+        showToast('App deployed successfully!', 'success');
+        
+        // Refresh the hosted apps list
+        await fetchHostedApps();
+      } catch (error) {
+        log(`<span style="color: #f00;">❌ Deployment error: ${error.message}</span>`);
+        showToast(`Deployment failed: ${error.message}`, 'error');
+      } finally {
+        deployBtn.disabled = false;
+        deployIcon.innerHTML = '🚀';
+        deployText.textContent = 'Deploy App';
+      }
+    }
 
-        function log(message) {
-            document.getElementById('logs').innerHTML += `<p>${message}</p>`;
-        }
+    /***************************************
+     *       FETCH HOSTED APPS            *
+     ***************************************/
+    async function fetchHostedApps() {
+      document.getElementById('loading-apps').classList.remove('hidden');
+      const hostedAppsUl = document.getElementById('hosted-apps');
+      hostedAppsUl.innerHTML = '';
 
-        document.getElementById('sign-in').addEventListener('click', async () => {
-            try {
-                await puter.auth.signIn();
-                location.reload();
-            } catch (error) {
-                alert("❌ Sign-in failed: " + error.message);
-            }
+      try {
+        const apps = await puter.hosting.list();
+        apps.forEach(app => {
+          const li = document.createElement('li');
+          li.className = "flex items-center space-x-2";
+
+          // App Link
+          const link = document.createElement('a');
+          link.href = `https://${app.subdomain}.puter.site`;
+          link.target = "_blank";
+          link.style.color = "#66ccff";
+          link.className = "truncate";
+          link.style.textDecoration = "underline";
+          link.textContent = `${app.subdomain}.puter.site`;
+
+          // Copy Button
+          const copyBtn = document.createElement('button');
+          copyBtn.className = "glass-button px-2 py-1 text-sm flex items-center hover:bg-opacity-50";
+          copyBtn.innerHTML = `
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                 xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7V5a3 3 0 013-3h7a3 
+                    3 0 013 3v12a3 3 0 01-3 3h-2m-4 
+                    0H5a2 2 0 01-2-2V7a2 2 0 012-2h3"/>
+              </svg>
+          `;
+          copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(link.href);
+            showToast('Link copied to clipboard!', 'success');
+          });
+
+          li.appendChild(link);
+          li.appendChild(copyBtn);
+          hostedAppsUl.appendChild(li);
         });
+      } catch (error) {
+        log(`<span style="color: #f00;">❌ Error fetching hosted apps: ${error.message}</span>`);
+      } finally {
+        document.getElementById('loading-apps').classList.add('hidden');
+      }
+    }
 
-        document.getElementById('sign-out').addEventListener('click', async () => {
-            await puter.auth.signOut();
-            location.reload();
-        });
-
+    /***************************************
+     *      SIGN IN / SIGN OUT HANDLERS   *
+     ***************************************/
+    document.getElementById('sign-in').addEventListener('click', async () => {
+      try {
+        await puter.auth.signIn();
         checkAuth();
-    </script>
+      } catch (error) {
+        log(`<span style="color: #f00;">❌ Sign in error: ${error.message}</span>`);
+        showToast('Sign in failed', 'error');
+      }
+    });
 
+    document.getElementById('sign-out').addEventListener('click', async () => {
+      try {
+        const user = await puter.auth.getUser();
+        if (!user) {
+          showToast('No user is currently signed in!', 'warning');
+          return;
+        }
+        await puter.auth.signOut();
+        showToast('Signed out successfully.', 'success');
+        log(`<span style="color: #ff0;">⚠️ You have signed out.</span>`);
+        location.reload();
+      } catch (error) {
+        log(`<span style="color: #f00;">❌ Sign out error: ${error.message}</span>`);
+        showToast('Sign out failed', 'error');
+      }
+    });
+
+    /***************************************
+     *     INITIAL SETUP ON DOM LOAD       *
+     ***************************************/
+    document.addEventListener('DOMContentLoaded', () => {
+      loadLogsFromStorage();
+      loadLogsToUI();
+      checkAuth();
+
+      // Show selected file name
+      document.getElementById('fileUpload').addEventListener('change', function() {
+        const fileName = this.files[0] ? this.files[0].name : 'Choose HTML file';
+        document.getElementById('file-name').textContent = fileName;
+      });
+    });
+  </script>
 </body>
 </html>
